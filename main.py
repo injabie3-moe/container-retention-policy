@@ -51,6 +51,14 @@ class AccountType(str, Enum):
     PERSONAL = 'personal'
 
 
+public_images_with_more_than_5000_downloads: list[str] = []
+PUBLIC_IMAGE_MSG = (
+    'Publicly visible package versions with more than '
+    '5000 downloads cannot be deleted. '
+    'Contact GitHub support for further assistance.'
+)
+
+
 async def list_org_package_versions(
     *, org_name: str, image_name: ImageName, http_client: AsyncClient
 ) -> list[dict[str, Any]]:
@@ -87,10 +95,14 @@ def post_deletion_output(*, response: Response, image_name: ImageName, version_i
     Output a little info to the user.
     """
     if response.is_error:
-        print(
-            f'\nCouldn\'t delete {image_name.value}:{version_id}.\n'
-            f'Status code: {response.status_code}\nResponse: {response.json()}\n'
-        )
+        if response.status_code == 400 and response.json()['message'] == PUBLIC_IMAGE_MSG:
+            # Output the names of these images in one block at the end
+            public_images_with_more_than_5000_downloads.append(image_name.value)
+        else:
+            print(
+                f'\nCouldn\'t delete {image_name.value}:{version_id}.\n'
+                f'Status code: {response.status_code}\nResponse: {response.json()}\n'
+            )
     else:
         print(f'Deleted old image: {image_name.value}:{version_id}')
 
@@ -375,6 +387,16 @@ async def main(
             for image_name in inputs.image_names
         ]
         await asyncio.gather(*tasks)
+
+    if public_images_with_more_than_5000_downloads:
+        image_list = '\n\t- '.join(i for i in public_images_with_more_than_5000_downloads)
+        msg = (
+            'The follow images are public and have more than 5000 downloads. '
+            f'These cannot be deleted via the Github API:\n\n\t- {image_list}\n\n'
+            f'If you still want to delete these images, contact Github support.\n\n'
+            'See https://docs.github.com/en/rest/reference/packages for more info.'
+        )
+        print(msg)
 
 
 if __name__ == '__main__':
