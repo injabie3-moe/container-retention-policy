@@ -94,17 +94,18 @@ def post_deletion_output(*, response: Response, image_name: ImageName, version_i
     """
     Output a little info to the user.
     """
+    image_name_with_tag = f'{image_name.value}:{version_id}'
     if response.is_error:
         if response.status_code == 400 and response.json()['message'] == PUBLIC_IMAGE_MSG:
             # Output the names of these images in one block at the end
-            public_images_with_more_than_5000_downloads.append(image_name.value)
+            public_images_with_more_than_5000_downloads.append(image_name_with_tag)
         else:
             print(
-                f'\nCouldn\'t delete {image_name.value}:{version_id}.\n'
+                f'\nCouldn\'t delete {image_name_with_tag}.\n'
                 f'Status code: {response.status_code}\nResponse: {response.json()}\n'
             )
     else:
-        print(f'Deleted old image: {image_name.value}:{version_id}')
+        print(f'Deleted old image: {image_name_with_tag}')
 
 
 async def delete_org_package_versions(
@@ -389,10 +390,10 @@ async def main(
         await asyncio.gather(*tasks)
 
     if public_images_with_more_than_5000_downloads:
-        image_list = '\n\t- '.join(i for i in public_images_with_more_than_5000_downloads)
+        image_list = '\n\t- ' + '\n\t- '.join(public_images_with_more_than_5000_downloads)
         msg = (
             'The follow images are public and have more than 5000 downloads. '
-            f'These cannot be deleted via the Github API:\n\n\t- {image_list}\n\n'
+            f'These cannot be deleted via the Github API:\n{image_list}\n\n'
             f'If you still want to delete these images, contact Github support.\n\n'
             'See https://docs.github.com/en/rest/reference/packages for more info.'
         )
