@@ -399,6 +399,10 @@ async def main(
         )
         print(msg)
 
+        # After printing the human readable list, let's also add it to the action outputs
+        comma_separated_list = ','.join(public_images_with_more_than_5000_downloads)
+        print(f'\n::set-output name=public-images-with-5000-downloads-or-more::{comma_separated_list}')
+
 
 if __name__ == '__main__':
     asyncio.run(main(*argv[1:]))

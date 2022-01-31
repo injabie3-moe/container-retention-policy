@@ -426,9 +426,10 @@ async def test_public_images_with_more_than_5000_downloads(mocker, capsys):
         }
     )
     captured = capsys.readouterr()
-    assert captured.out == (
-        'The follow images are public and have more than 5000 downloads. These cannot '
-        'be deleted via the Github API:\n\n\t- a\n\t- b\n\t- c\n\n'
-        f'If you still want to delete these images, contact Github support.\n\n'
-        'See https://docs.github.com/en/rest/reference/packages for more info.\n'
+    assert (
+        captured.out
+        == 'The follow images are public and have more than 5000 downloads. These cannot be deleted via the Github '
+        'API:\n\n\t- a:1\n\t- b:1\n\t- c:1\n\nIf you still want to delete these images, contact Github support.\n\n'
+        'See https://docs.github.com/en/rest/reference/packages for more info.\n\n'
+        '::set-output name=public-images-with-5000-downloads-or-more::a:1,b:1,c:1\n'
     )
