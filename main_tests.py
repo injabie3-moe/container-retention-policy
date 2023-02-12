@@ -66,7 +66,10 @@ def github_env():
 
 
 async def test_list_org_package_version(http_client):
-    await list_org_package_versions(org_name='test', image_name=ImageName('test'), http_client=http_client)
+    async for package_version in list_org_package_versions(
+        org_name='test', image_name=ImageName('test'), http_client=http_client
+    ):
+        assert package_version
 
 
 async def test_wait_for_rate_limit(ok_response, capsys):
